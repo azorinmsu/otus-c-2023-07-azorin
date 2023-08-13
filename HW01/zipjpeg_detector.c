@@ -112,12 +112,12 @@ int main(int argc, char** argv) {
 
 
     if (detectZipJpeg(content, SIGNATURE_ZIP, size)) {
-		printf("This is zipjpeg");
+		printf("This is zipjpeg\n");
         showZipFiles(content, size);
     } else if (detectZipJpeg(content, SIGNATURE_EMPTY_ZIP, size)) {
-        printf("This is empty zipjpeg");
+        printf("This is empty zipjpeg\n");
     } else {
-        printf("This is ordinary file");
+        printf("This is ordinary file\n");
     }
 
 	fclose(fp);                                  	
