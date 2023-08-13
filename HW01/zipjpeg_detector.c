@@ -27,6 +27,64 @@ bool detectZipJpeg(char* content, const unsigned char* signature , size_t size) 
     return false;
 }
 
+long int getIndexFileHeader(int beginIndex, char* content, size_t size) {
+    for (size_t i = beginIndex; i < size - 4; ++i) {
+        size_t j;
+        for (j = 0; j < 4; ++j) {
+            if (content[i + j] != SIGNATURE_ZIP[j]) {
+                break;
+            }
+        }
+
+        if (j == 4) {
+            return i;
+        }
+    }
+
+    return 0;
+}
+
+bool printFileName(size_t beginFileHeader, char* content, size_t size) {
+    size_t shiftFileLength = 26;
+
+    if (beginFileHeader == 0) {
+        return false;
+    }
+
+    size_t beginFileLengthIndex = shiftFileLength + beginFileHeader;
+    if (beginFileLengthIndex >= size) {
+        return false;
+    }
+
+    size_t fileLength = content[beginFileLengthIndex];
+
+    size_t shiftFileNameIndex = 3;
+    size_t beginFileNameIndex = beginFileLengthIndex + shiftFileNameIndex;
+    if (beginFileNameIndex + fileLength >= size) {
+        return false;
+    }
+
+    for (size_t i = beginFileNameIndex; i <= beginFileNameIndex + fileLength; ++i) {
+        printf("%c", content[i]);
+    }
+    printf("\n");
+    return true;
+ 
+}
+
+void showZipFiles(char* content, size_t size) {
+    size_t shiftIndex = 0;
+
+    do {
+        size_t indexFileHeader = getIndexFileHeader(shiftIndex, content, size);
+        shiftIndex = indexFileHeader + 1;
+
+        if (!printFileName(indexFileHeader, content, size)) {
+            break;
+        }
+    } while (shiftIndex > 0);
+}
+
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -53,10 +111,14 @@ int main(int argc, char** argv) {
 	}
 
 
-    if (detectZipJpeg(content, SIGNATURE_ZIP, size) || 
-            detectZipJpeg(content, SIGNATURE_EMPTY_ZIP, size)) {
+    if (detectZipJpeg(content, SIGNATURE_ZIP, size)) {
 		printf("This is zipjpeg");
-	}
+        showZipFiles(content, size);
+    } else if (detectZipJpeg(content, SIGNATURE_EMPTY_ZIP, size)) {
+        printf("This is empty zipjpeg");
+    } else {
+        printf("This is ordinary file");
+    }
 
 	fclose(fp);                                  	
 	return EXIT_FAILURE;
