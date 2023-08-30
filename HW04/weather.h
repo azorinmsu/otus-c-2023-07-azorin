@@ -1,0 +1,2 @@
+
+void requestWeatherForLocation(char* location);
