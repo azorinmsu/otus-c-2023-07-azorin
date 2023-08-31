@@ -24,11 +24,17 @@ void convertUTF8(uchar content[], const size_t size, wchar_t mapping[], FILE* ou
     wchar_t unicode = mapping[mappingindex];
     
     uchar first = (uchar) (((unicode >> 6) & 0x1F) | 0xC0);
-    uchar second = (char) (((unicode >> 0) & 0x3F) | 0x80);
+    uchar second = (uchar) (((unicode >> 0) & 0x3F) | 0x80);
 
     fwrite(&first, sizeof(uchar), 1, outputFile);
     fwrite(&second, sizeof(uchar), 1, outputFile);
   }
+}
+
+void printHelp() {
+  printf("The first argument must be file's encrypted file");
+  printf("The second argument must be file's encoding");
+  printf("The third argument must be name of output file");
 }
 
 void convertEncodingFile(uchar content[], const size_t size, const char* encodingInputFile, FILE* outputFile) {
@@ -40,6 +46,7 @@ void convertEncodingFile(uchar content[], const size_t size, const char* encodin
     convertUTF8(content, size, KOI8_MAPPING_UNICODE, outputFile);
   } else {
     perror("unknown encoding");
+    printHelp();
     exit(1);
   }
 }
@@ -54,6 +61,7 @@ int main(int argc, char *argv[]) {
   FILE* inputFile = fopen(inputFileName, "r");
   if (!inputFile) {
     fprintf(stderr, "can't open file %s: %s", inputFileName, strerror(errno));
+    printHelp();
     exit(1);
   }
 
@@ -61,6 +69,8 @@ int main(int argc, char *argv[]) {
   FILE* outputFile = fopen(outputFileName, "w+");
   if (!outputFile) {
     fprintf(stderr, "can't open file %s: %s", outputFileName, strerror(errno));
+    printHelp();
+    exit(1);
   }
  
   const char* encodingInputFile = argv[2];

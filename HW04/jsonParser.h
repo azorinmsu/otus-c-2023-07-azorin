@@ -1,2 +1,3 @@
+#pragma once
 
-void parseResponse(char* res);
+void parseResponse(const char* res);

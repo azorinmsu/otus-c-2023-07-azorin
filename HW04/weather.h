@@ -1,2 +1,3 @@
+#pragma once
 
-void requestWeatherForLocation(char* location);
+void requestWeatherForLocation(const char* location);

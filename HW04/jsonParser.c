@@ -14,7 +14,7 @@ struct json_object* findNodeByKey(struct json_object* jobj, char* key) {
   return tmp;
 }
 
-void parseResponse(char* res) {
+void parseResponse(const char* res) {
   struct json_object* root = json_tokener_parse(res);
 
   struct json_object* weather = json_object_object_get(root, "weather");

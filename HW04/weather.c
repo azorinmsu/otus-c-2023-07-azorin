@@ -15,7 +15,7 @@ struct Memory {
   size_t size;
 };
 
-size_t recievedData(void* data, size_t size, size_t nmemb, void* clientp) {
+static size_t recievedData(void* data, size_t size, size_t nmemb, void* clientp) {
   size_t realSize = size * nmemb;
   struct Memory* mem = (struct Memory*) clientp;
 
@@ -32,7 +32,7 @@ size_t recievedData(void* data, size_t size, size_t nmemb, void* clientp) {
   return realSize;
 }
 
-void requestWeatherForLocation(char *location) {
+void requestWeatherForLocation(const char *location) {
   CURL* handle = curl_easy_init();
   if (!handle) {
     perror("Can't create curl struct. Programm was stopped");
@@ -56,7 +56,5 @@ void requestWeatherForLocation(char *location) {
 
   curl_easy_cleanup(handle);
   free(chunk.response);
-
-  exit(1);
 }
 
