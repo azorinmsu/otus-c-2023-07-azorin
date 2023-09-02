@@ -22,9 +22,13 @@ static long long hashcode(const char* key, const size_t size) {
   long long hash = 0;
   long long p_pow = 1;
 
+  printf("start hash");
+
   for (size_t i = 0; i < size; ++i) {
     hash += (key[i] - 'a'  + 1) * p_pow;
     p_pow *= HASH_CONST_NUMBER;
+
+    printf("%lld", hash);
   }
 
   return hash;
@@ -96,6 +100,7 @@ static void add(struct entry* entries, size_t size, const char* key, int value) 
 
 static struct entry find(const char* key, const size_t size) {
   long long hash = hashcode(key, size);
+  printf("hash ok");
   size_t index = (size_t) (hash & (long long) (capacity - 1));
 
   while (hashtable[index].key != NULL) {

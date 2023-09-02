@@ -7,62 +7,66 @@
 #include "hashtable.h"
 #include <string.h>
 
+struct word {
+  char* content;
+  size_t size;
+};
+
 struct words {
-  char** content;
+  struct word* values;
   size_t size;
 };
 
 struct words splitWordsBySpace(const char* content, const size_t size) {
   size_t count = 0;
-  
-  printf("TEST1");
-
+  size_t lastSpace = 0;
   for (size_t i = 0; i < size; ++i) {
     if (content[i] == ' ') {
       ++count;
+      lastSpace = i;
     }
   }
   
-printf("TEST2");
+  if (size - lastSpace > 0) {
+    ++count;
+  }
 
-  char** wordsContent = (char**) malloc(sizeof(char*) * (count + 1));
-  if (!wordsContent) {
+  struct word* words = (struct word*) malloc(sizeof(struct word) * count);
+  if (!words) {
     printf("Not having enough memory");
     exit(1);
   }
-
+  
   size_t indexWordsContent = 0;
   size_t index = 0;
   size_t lastDelimiterIndex = 0;
   while (index < size) {
     if (content[index] == ' ') {
-      wordsContent[indexWordsContent] = (char*) malloc(sizeof(char) * index - lastDelimiterIndex);
-      memcpy(wordsContent[indexWordsContent], &content[lastDelimiterIndex], index - lastDelimiterIndex);
+      words[indexWordsContent].content = (char*) malloc(sizeof(char) * (index - lastDelimiterIndex));
+      words[indexWordsContent].size = index - lastDelimiterIndex;
+      memcpy(words[indexWordsContent].content, &content[lastDelimiterIndex], index - lastDelimiterIndex);
       
       lastDelimiterIndex = index + 1;
       ++indexWordsContent;
     }
   
-    printf("%lu, %lu, %lu", index, indexWordsContent, count + 1);
-
-    if (index == size -1 && lastDelimiterIndex > 0 && indexWordsContent < count) {
-      wordsContent[indexWordsContent] = (char*) malloc(sizeof(char) * index - lastDelimiterIndex);
-      memcpy(wordsContent[indexWordsContent], &content[lastDelimiterIndex], index - lastDelimiterIndex);
+    if (index == size -1 && indexWordsContent == count - 1) {
+      words[indexWordsContent].content = (char*) malloc(sizeof(char) * (index - lastDelimiterIndex));
+      words[indexWordsContent].size = index - lastDelimiterIndex;
+      memcpy(words[indexWordsContent].content, &content[lastDelimiterIndex], index - lastDelimiterIndex);
     }
     ++index;
 
   }
 
-  struct words words;
-  words.content = wordsContent;
-  words.size = count;
+  struct words result;
+  result.values = words;
+  result.size = count;
 
-  return words;
+  return result;
 }
 
 int main(int argc, char *argv[]) {
-
-  printf("TEST-1");
   if (argc != 2) {
     perror("Number of argumets must be equals two");
     return EXIT_FAILURE;
@@ -89,22 +93,25 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
  
-  printf("TEST0");
-
   struct words words = splitWordsBySpace(content, size);
 
   for (size_t i = 0; i < words.size; ++i) {
-    const char* word = words.content[i];
-    const size_t keySize = sizeof(&word) / sizeof(char);
+    const struct word word = words.values[i];
 
-    if (contains(word, keySize)) {
-      addAndIncrementExistsValue(word, keySize);
+    printf("keySize %lu", word.size);
+
+    contains(word.content, word.size);
+
+   /* if (contains(word, keySize)) {
+      printf("TEST1\n");
+      //addAndIncrementExistsValue(word, keySize);
     } else {
-      addNewWithDefaultValue(word, keySize);
-    }
+      printf("TEST2\n");
+      //addNewWithDefaultValue(word, keySize);
+    }*/
   }
 
-  printHashTable();
+  //printHashTable();
 
   fclose(inputFile);
 
