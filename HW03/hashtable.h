@@ -2,12 +2,13 @@
 #define HASH_TABLE_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
-bool contains(const char* key);
+bool contains(const char* key, const size_t size);
 
-void addNewWithDefaultValue(const char* key);
+void addNewWithDefaultValue(const char* key, const size_t size);
 
-void addAndIncrementExistsValue(const char* key);
+void addAndIncrementExistsValue(const char* key, const size_t size);
 
 void printHashTable();
 
