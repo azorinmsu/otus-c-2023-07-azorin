@@ -98,20 +98,14 @@ int main(int argc, char *argv[]) {
   for (size_t i = 0; i < words.size; ++i) {
     const struct word word = words.values[i];
 
-    printf("keySize %lu", word.size);
-
-    contains(word.content, word.size);
-
-   /* if (contains(word, keySize)) {
-      printf("TEST1\n");
-      //addAndIncrementExistsValue(word, keySize);
+    if (contains(word.content, word.size)) {
+      addAndIncrementExistsValue(word.content, word.size);
     } else {
-      printf("TEST2\n");
-      //addNewWithDefaultValue(word, keySize);
-    }*/
+      addNewWithDefaultValue(word.content, word.size);
+    }
   }
 
-  //printHashTable();
+  printHashtable();
 
   fclose(inputFile);
 
