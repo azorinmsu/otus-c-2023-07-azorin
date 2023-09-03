@@ -35,60 +35,59 @@ static long long hashcode(const char* key, const size_t size) {
   return hash;
 }
 
-static void add(struct hashtable hashtable, size_t size, const char* key, int value);
+static void add(struct hashtable* hashtable, size_t size, const char* key, int value);
 
-static void expand(const size_t size) {
-  if (hashtable.table == NULL) {
-    hashtable.table = (struct entry*) malloc(sizeof(struct entry) * size);
-    hashtable.capacity = size;
+static void expand(struct hashtable* hashtable) {
+  if (hashtable->table == NULL) {
+    hashtable->table = (struct entry*) malloc(sizeof(struct entry) * DEFAULT_SIZE);
+    hashtable->capacity = DEFAULT_SIZE;
     return;
   }
 
+  size_t newSize = hashtable->capacity + DEFAULT_SIZE*2;
   struct hashtable nHashtable;
-  nHashtable.table = (struct entry*) malloc(sizeof(struct entry) * size);
-  nHashtable.capacity = size;
+  nHashtable.table = (struct entry*) malloc(sizeof(struct entry) * newSize);
+  nHashtable.capacity = newSize;
   if (!nHashtable.table) {
     printf("Failed initialize array.");
     exit(1);
   }
 
-  for (size_t i = 0; i < hashtable.capacity; ++i) {
-    struct entry backet = hashtable.table[i];
+  for (size_t i = 0; i < hashtable->capacity; ++i) {
+    struct entry backet = hashtable->table[i];
     if (backet.key == NULL) {
       continue;
     }
 
-    add(nHashtable, backet.keySize, backet.key, backet.value);
+    add(&nHashtable, backet.keySize, backet.key, backet.value);
   }
 
-  hashtable.table = nHashtable.table;
-  hashtable.capacity = nHashtable.capacity;
+  hashtable->table = nHashtable.table;
+  hashtable->capacity = nHashtable.capacity;
 }
 
-static void add(struct hashtable container, size_t size, const char* key,const int value) {
+static void add(struct hashtable* container, size_t size, const char* key,const int value) {
   long long hash = hashcode(key, size);
 
-  if (container.table == NULL) {
-    expand(DEFAULT_SIZE);
-    container = hashtable;
+  if (container->table == NULL) {
+    expand(container);
   }
 
-  size_t index = (size_t) (hash % container.capacity);
+  size_t index = (size_t) (hash % container->capacity);
 
-  if (index >= container.capacity / 2 ) {
-    expand(container.capacity + DEFAULT_SIZE * 2);
-    container = hashtable;
-    index = (size_t) (hash % container.capacity);
+  if (index >= container->capacity / 2 ) {
+    expand(container);
+    index = (size_t) (hash % container->capacity);
   }
 
-  while (container.table[index].key != NULL) {
-    if (strcmp(container.table[index].key, key) == 0) {
-      container.table[index].value = value;
+  while (container->table[index].key != NULL) {
+    if (strcmp(container->table[index].key, key) == 0) {
+      container->table[index].value = value;
       return;
     }
 
     index++;
-    if (index >= container.capacity) {
+    if (index >= container->capacity) {
       index = 0;
     }
   }
@@ -100,12 +99,12 @@ static void add(struct hashtable container, size_t size, const char* key,const i
   backet.value = value;
   backet.key = key_copy;
   backet.keySize = size;
-  container.table[index] = backet;
+  container->table[index] = backet;
 }
 
 static struct entry find(const char* key, const size_t size) {
   if (hashtable.table == NULL) {
-    expand(DEFAULT_SIZE);
+    expand(&hashtable);
     return EMPTY_ENTRY;
   }
 
@@ -132,7 +131,7 @@ bool contains(const char* key, const size_t size) {
 }
 
 void addNewWithDefaultValue(const char* key, const size_t size) {
-  add(hashtable, size, key, 1);
+  add(&hashtable, size, key, 1);
 }
 
 void addAndIncrementExistsValue(const char* key, const size_t size) { 
@@ -142,7 +141,7 @@ void addAndIncrementExistsValue(const char* key, const size_t size) {
   }
 
   int value = backet.value + 1;
-  add(hashtable, size, key, value);
+  add(&hashtable, size, key, value);
 }
 
 void printHashtable() {
