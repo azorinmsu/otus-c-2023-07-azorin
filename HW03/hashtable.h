@@ -10,6 +10,8 @@ void addNewWithDefaultValue(const char* key, const size_t size);
 
 void addAndIncrementExistsValue(const char* key, const size_t size);
 
+void destroyHashtable();
+
 void printHashtable();
 
 #endif

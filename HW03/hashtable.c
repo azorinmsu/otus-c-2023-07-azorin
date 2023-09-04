@@ -161,4 +161,14 @@ void printHashtable() {
   }
 }
 
+void destroyHashtable() {
+  for (size_t i = 0; i < hashtable.capacity; ++i) {
+    if (hashtable.table[i].key == NULL) {
+      continue;
+    }
 
+    free(hashtable.table[i].key);
+  }
+
+  free(hashtable.table);
+}

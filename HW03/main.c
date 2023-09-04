@@ -7,63 +7,41 @@
 #include "hashtable.h"
 #include <string.h>
 
-struct word {
-  char* content;
-  size_t size;
-};
+static void addWord(const char* word, const size_t size) {
+  if (contains(word, size)) {
+    addAndIncrementExistsValue(word, size);
+  } else {
+    addNewWithDefaultValue(word, size);
+  }
+}
 
-struct words {
-  struct word* values;
-  size_t size;
-};
-
-struct words splitWordsBySpace(const char* content, const size_t size) {
-  size_t count = 0;
-  size_t lastSpace = 0;
+static void addAllWordsHashtable(const char* content, const size_t size) {
+  size_t tempCounter = 0;
+  char* tempContent = malloc(sizeof(char) * size);
   for (size_t i = 0; i < size; ++i) {
-    if (content[i] == ' ') {
-      ++count;
-      lastSpace = i;
+    if (content[i] != '\n' && content[i] != ' ') {
+      tempContent[tempCounter] = content[i];
+      ++tempCounter;
+    } else {
+        if (i != 0 && (content[i - 1] != ' ' && content[i- 1] != '\n')) {
+          tempContent[tempCounter] = ' ';
+          ++tempCounter;
+        }
     }
   }
   
-  if (size - lastSpace > 0) {
-    ++count;
-  }
-
-  struct word* words = (struct word*) malloc(sizeof(struct word) * count);
-  if (!words) {
-    printf("Not having enough memory");
-    exit(1);
-  }
-  
-  size_t indexWordsContent = 0;
   size_t index = 0;
   size_t lastDelimiterIndex = 0;
-  while (index < size) {
-    if (content[index] == ' ') {
-      words[indexWordsContent].content = (char*) malloc(sizeof(char) * (index - lastDelimiterIndex));
-      words[indexWordsContent].size = index - lastDelimiterIndex;
-      memcpy(words[indexWordsContent].content, &content[lastDelimiterIndex], index - lastDelimiterIndex);
-      
+  while (index < tempCounter) {
+    if (tempContent[index] == ' ') {
+      size_t sizeWord = index - lastDelimiterIndex;
+      char* word = (char*) malloc(sizeof(char) * sizeWord);
+      memcpy(word, &tempContent[lastDelimiterIndex], sizeWord);
+      addWord(word, sizeWord);
       lastDelimiterIndex = index + 1;
-      ++indexWordsContent;
-    }
-  
-    if (index == size -1 && indexWordsContent == count - 1) {
-      words[indexWordsContent].content = (char*) malloc(sizeof(char) * (index - lastDelimiterIndex));
-      words[indexWordsContent].size = index - lastDelimiterIndex;
-      memcpy(words[indexWordsContent].content, &content[lastDelimiterIndex], index - lastDelimiterIndex);
     }
     ++index;
-
   }
-
-  struct words result;
-  result.values = words;
-  result.size = count;
-
-  return result;
 }
 
 int main(int argc, char *argv[]) {
@@ -93,20 +71,11 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
  
-  struct words words = splitWordsBySpace(content, size);
-
-  for (size_t i = 0; i < words.size; ++i) {
-    const struct word word = words.values[i];
-
-    if (contains(word.content, word.size)) {
-      addAndIncrementExistsValue(word.content, word.size);
-    } else {
-      addNewWithDefaultValue(word.content, word.size);
-    }
-  }
+  addAllWordsHashtable(content, size);
 
   printHashtable();
 
+  destroyHashtable();
   fclose(inputFile);
 
   return EXIT_SUCCESS;
