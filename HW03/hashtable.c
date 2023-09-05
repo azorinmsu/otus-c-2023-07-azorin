@@ -6,7 +6,7 @@
 #include <string.h>
 
 struct entry {
-  unsigned char* key;
+  char* key;
   size_t keySize;
   int value;
 };
@@ -25,9 +25,9 @@ struct hashtable {
 static struct hashtable hashtable;
 
 static void add(struct hashtable* hashtable, size_t size, 
-                const unsigned char* key, int value);
+                const char* key, int value);
 
-static size_t hashcode(const unsigned char* key, const size_t size) {
+static size_t hashcode(const char* key, const size_t size) {
   size_t hash = 0;
   size_t p_pow = 1;
 
@@ -69,7 +69,7 @@ static void expand(struct hashtable* hashtable) {
 }
 
 static void add(struct hashtable* container, size_t size, 
-                const unsigned char* key, const int value) {
+                const char* key, const int value) {
   size_t hash = hashcode(key, size);
 
   if (container->table == NULL) {
@@ -96,7 +96,7 @@ static void add(struct hashtable* container, size_t size,
   }
 
   struct entry backet;
-  unsigned char* key_copy = (unsigned char*) malloc(sizeof(unsigned char) * size);
+  char* key_copy = (char*) malloc(sizeof(char) * size);
   memcpy(key_copy, key, size);
 
   backet.value = value;
@@ -105,7 +105,7 @@ static void add(struct hashtable* container, size_t size,
   container->table[index] = backet;
 }
 
-static struct entry find(const unsigned char* key, const size_t size) {
+static struct entry find(const char* key, const size_t size) {
   if (hashtable.table == NULL) {
     expand(&hashtable);
     return EMPTY_ENTRY;
@@ -128,16 +128,16 @@ static struct entry find(const unsigned char* key, const size_t size) {
   return EMPTY_ENTRY;
 }
 
-bool contains(const unsigned char* key, const size_t size) {
+bool contains(const char* key, const size_t size) {
   struct entry backet = find(key, size);
   return backet.key != NULL;
 }
 
-void addNewWithDefaultValue(const unsigned char* key, const size_t size) {
+void addNewWithDefaultValue(const char* key, const size_t size) {
   add(&hashtable, size, key, 1);
 }
 
-void addAndIncrementExistsValue(const unsigned char* key, const size_t size) { 
+void addAndIncrementExistsValue(const char* key, const size_t size) { 
   struct entry backet = find(key, size);
   if (backet.key == NULL) {
     return;
