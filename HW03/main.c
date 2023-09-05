@@ -7,7 +7,7 @@
 #include "hashtable.h"
 #include <string.h>
 
-static void addWord(const char* word, const size_t size) {
+static void addWord(const unsigned char* word, const size_t size) {
   if (contains(word, size)) {
     addAndIncrementExistsValue(word, size);
   } else {
@@ -15,32 +15,24 @@ static void addWord(const char* word, const size_t size) {
   }
 }
 
-static void addAllWordsHashtable(const char* content, const size_t size) {
-  size_t tempCounter = 0;
-  char* tempContent = malloc(sizeof(char) * size);
+static void addAllWordsHashtable(const unsigned char* content, const size_t size) {
+  size_t startWord = 0;
+
   for (size_t i = 0; i < size; ++i) {
     if (content[i] != '\n' && content[i] != ' ') {
-      tempContent[tempCounter] = content[i];
-      ++tempCounter;
+      if (i > 0 && (content[i - 1] == ' ' || content[i-1] == '\n')) {
+        startWord = i;
+      }
     } else {
         if (i != 0 && (content[i - 1] != ' ' && content[i- 1] != '\n')) {
-          tempContent[tempCounter] = ' ';
-          ++tempCounter;
+          size_t sizeWord = i - startWord;
+          unsigned char word[sizeWord + 1];
+
+          memcpy(word, &content[startWord], sizeWord);
+          word[sizeWord] = '\0';
+          addWord(word, sizeWord);
         }
     }
-  }
-  
-  size_t index = 0;
-  size_t lastDelimiterIndex = 0;
-  while (index < tempCounter) {
-    if (tempContent[index] == ' ') {
-      size_t sizeWord = index - lastDelimiterIndex;
-      char* word = (char*) malloc(sizeof(char) * sizeWord);
-      memcpy(word, &tempContent[lastDelimiterIndex], sizeWord);
-      addWord(word, sizeWord);
-      lastDelimiterIndex = index + 1;
-    }
-    ++index;
   }
 }
 
@@ -64,13 +56,13 @@ int main(int argc, char *argv[]) {
   }
 
   const size_t size = buffer.st_size;
-  char content[size];
+  unsigned char* content = (unsigned char*) malloc(sizeof(unsigned char) * size);
 
   if (fread(content, sizeof content[0], size, inputFile) != size) {
     fprintf(stderr, "%s", strerror(errno));
     return EXIT_FAILURE;
   }
- 
+
   addAllWordsHashtable(content, size);
 
   printHashtable();

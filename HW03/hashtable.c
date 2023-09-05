@@ -6,15 +6,16 @@
 #include <string.h>
 
 struct entry {
-  char* key;
+  unsigned char* key;
   size_t keySize;
   int value;
 };
 
 static const size_t DEFAULT_SIZE = 10;
-static const int HASH_CONST_NUMBER = 53;
+static const size_t HASH_CONST_NUMBER = 53;
 
 static const struct entry EMPTY_ENTRY;
+
 
 struct hashtable {
   struct entry* table;
@@ -23,9 +24,12 @@ struct hashtable {
 
 static struct hashtable hashtable;
 
-static long long hashcode(const char* key, const size_t size) {
-  long long hash = 0;
-  long long p_pow = 1;
+static void add(struct hashtable* hashtable, size_t size, 
+                const unsigned char* key, int value);
+
+static size_t hashcode(const unsigned char* key, const size_t size) {
+  size_t hash = 0;
+  size_t p_pow = 1;
 
   for (size_t i = 0; i < size; ++i) {
     hash += (key[i] - 'a'  + 1) * p_pow;
@@ -34,8 +38,6 @@ static long long hashcode(const char* key, const size_t size) {
 
   return hash;
 }
-
-static void add(struct hashtable* hashtable, size_t size, const char* key, int value);
 
 static void expand(struct hashtable* hashtable) {
   if (hashtable->table == NULL) {
@@ -66,14 +68,15 @@ static void expand(struct hashtable* hashtable) {
   hashtable->capacity = nHashtable.capacity;
 }
 
-static void add(struct hashtable* container, size_t size, const char* key,const int value) {
-  long long hash = hashcode(key, size);
+static void add(struct hashtable* container, size_t size, 
+                const unsigned char* key, const int value) {
+  size_t hash = hashcode(key, size);
 
   if (container->table == NULL) {
     expand(container);
   }
 
-  size_t index = (size_t) (hash % container->capacity);
+  size_t index = (hash % container->capacity);
 
   if (index >= container->capacity / 2 ) {
     expand(container);
@@ -81,7 +84,7 @@ static void add(struct hashtable* container, size_t size, const char* key,const 
   }
 
   while (container->table[index].key != NULL) {
-    if (strcmp(container->table[index].key, key) == 0) {
+    if (memcmp(container->table[index].key, key, size) == 0) {
       container->table[index].value = value;
       return;
     }
@@ -93,7 +96,7 @@ static void add(struct hashtable* container, size_t size, const char* key,const 
   }
 
   struct entry backet;
-  char* key_copy = (char*) malloc(sizeof(char) * size);
+  unsigned char* key_copy = (unsigned char*) malloc(sizeof(unsigned char) * size);
   memcpy(key_copy, key, size);
 
   backet.value = value;
@@ -102,17 +105,17 @@ static void add(struct hashtable* container, size_t size, const char* key,const 
   container->table[index] = backet;
 }
 
-static struct entry find(const char* key, const size_t size) {
+static struct entry find(const unsigned char* key, const size_t size) {
   if (hashtable.table == NULL) {
     expand(&hashtable);
     return EMPTY_ENTRY;
   }
 
-  long long hash = hashcode(key, size);
-  size_t index = (size_t) (hash % hashtable.capacity);
+  size_t hash = hashcode(key, size);
+  size_t index = (hash % hashtable.capacity);
 
   while (hashtable.table[index].key != NULL) {
-    if (strcmp(hashtable.table[index].key, key) == 0) {
+    if (memcmp(hashtable.table[index].key, key, size) == 0) {
       return hashtable.table[index];
     }
 
@@ -125,16 +128,16 @@ static struct entry find(const char* key, const size_t size) {
   return EMPTY_ENTRY;
 }
 
-bool contains(const char* key, const size_t size) {
+bool contains(const unsigned char* key, const size_t size) {
   struct entry backet = find(key, size);
   return backet.key != NULL;
 }
 
-void addNewWithDefaultValue(const char* key, const size_t size) {
+void addNewWithDefaultValue(const unsigned char* key, const size_t size) {
   add(&hashtable, size, key, 1);
 }
 
-void addAndIncrementExistsValue(const char* key, const size_t size) { 
+void addAndIncrementExistsValue(const unsigned char* key, const size_t size) { 
   struct entry backet = find(key, size);
   if (backet.key == NULL) {
     return;

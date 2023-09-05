@@ -4,11 +4,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-bool contains(const char* key, const size_t size);
+bool contains(const unsigned char* key, const size_t size);
 
-void addNewWithDefaultValue(const char* key, const size_t size);
+void addNewWithDefaultValue(const unsigned char* key, const size_t size);
 
-void addAndIncrementExistsValue(const char* key, const size_t size);
+void addAndIncrementExistsValue(const unsigned char* key, const size_t size);
 
 void destroyHashtable();
 
