@@ -14,7 +14,7 @@ struct entry {
 static const size_t DEFAULT_SIZE = 10;
 static const size_t HASH_CONST_NUMBER = 53;
 
-static const struct entry EMPTY_ENTRY;
+static const struct entry EMPTY_ENTRY = {.key = NULL, .keySize = 0, .value = 0};
 
 
 struct hashtable {
@@ -39,10 +39,27 @@ static size_t hashcode(const char* key, const size_t size) {
   return hash;
 }
 
+static void destroy(struct hashtable* hashtable) {
+  for (size_t i = 0; i < hashtable->capacity; ++i) {
+    if (hashtable->table[i].key == NULL) {
+      continue;
+    }
+
+    free(hashtable->table[i].key);
+  }
+
+  free(hashtable->table);
+}
+
+
 static void expand(struct hashtable* hashtable) {
   if (hashtable->table == NULL) {
     hashtable->table = (struct entry*) malloc(sizeof(struct entry) * DEFAULT_SIZE);
     hashtable->capacity = DEFAULT_SIZE;
+
+    for (size_t i = 0; i < hashtable->capacity; ++i) {
+      hashtable->table[i] = EMPTY_ENTRY;
+    }
     return;
   }
 
@@ -50,6 +67,11 @@ static void expand(struct hashtable* hashtable) {
   struct hashtable nHashtable;
   nHashtable.table = (struct entry*) malloc(sizeof(struct entry) * newSize);
   nHashtable.capacity = newSize;
+
+  for (size_t i = 0; i< nHashtable.capacity; ++i) {
+    nHashtable.table[i] = EMPTY_ENTRY;
+  }
+
   if (!nHashtable.table) {
     printf("Failed initialize array.");
     exit(1);
@@ -63,6 +85,8 @@ static void expand(struct hashtable* hashtable) {
 
     add(&nHashtable, backet.keySize, backet.key, backet.value);
   }
+
+  destroy(hashtable);
 
   hashtable->table = nHashtable.table;
   hashtable->capacity = nHashtable.capacity;
@@ -164,14 +188,7 @@ void printHashtable() {
   }
 }
 
+
 void destroyHashtable() {
-  for (size_t i = 0; i < hashtable.capacity; ++i) {
-    if (hashtable.table[i].key == NULL) {
-      continue;
-    }
-
-    free(hashtable.table[i].key);
-  }
-
-  free(hashtable.table);
+  destroy(&hashtable);
 }

@@ -30,7 +30,7 @@ static void addAllWordsHashtable(const char* content, const size_t size) {
 
           memcpy(word, &content[startWord], sizeWord);
           word[sizeWord] = '\0';
-          addWord(word, sizeWord);
+          addWord(word, sizeWord + 1);
         }
     }
   }
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
 
   printHashtable();
 
+  free(content);
   destroyHashtable();
   fclose(inputFile);
 
