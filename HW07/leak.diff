@@ -1,0 +1,30 @@
+--- clib_init/src/common/clib-package.c	2020-09-08 02:51:24.000000000 +0300
++++ clib/src/common/clib-package.c	2023-09-16 01:37:41.504796297 +0300
+@@ -664,6 +664,9 @@
+       json = res->data;
+       _debug("status: %d", res->status);
+       if (!res || !res->ok) {
++        http_get_free(res);
++        res = NULL;
++        json = NULL;
+         goto download;
+       }
+       log = "fetch";
+@@ -1002,6 +1005,8 @@
+   *status = rc;
+   (void)data->pkg->refs--;
+   pthread_exit((void *)status);
++  free(status);
++  status = NULL;
+   return (void *)rc;
+ }
+ #endif
+@@ -1588,6 +1593,8 @@
+     list_iterator_destroy(iterator);
+   if (command)
+     free(command);
++
++  clib_package_cleanup();
+ #ifdef HAVE_PTHREADS
+   if (NULL != pkg && NULL != pkg->src) {
+     if (pkg->src->len > 0) {
