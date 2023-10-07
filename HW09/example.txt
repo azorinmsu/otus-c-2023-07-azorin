@@ -1,0 +1,18 @@
+T Sat Oct  7 17:09:28 2023
+ example.c: 8:TRACE
+T Sat Oct  7 17:12:07 2023
+ example.c: 8:TRACE
+D Sat Oct  7 17:12:07 2023
+ example.c: 10:DEBUG
+I Sat Oct  7 17:12:07 2023
+ example.c: 12:INFO
+E Sat Oct  7 17:12:07 2023
+ example.c: 14:ERROR./main(+0x1491) [0x55ab735d2491]
+./main(+0x15ae) [0x55ab735d25ae]
+./main(+0x16a0) [0x55ab735d26a0]
+./main(+0x1320) [0x55ab735d2320]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf3) [0x7f07fc5aa083]
+./main(+0x11ce) [0x55ab735d21ce]
+
+F Sat Oct  7 17:12:07 2023
+ example.c: 16:FATAL
