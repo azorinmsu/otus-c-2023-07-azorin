@@ -58,7 +58,7 @@ static void daemonize(const char* cmd) {
   fd2 = dup(0);
 
   if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
-  
+    syslog(LOG_CRIT, "Неверные файловые дескрипторы %d %d %d", fd0, fd1, fd2); 
   }
 }
 
