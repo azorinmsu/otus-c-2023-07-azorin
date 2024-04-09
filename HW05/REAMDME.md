@@ -27,4 +27,4 @@ Cтудент коммитит все необходимое в свой github/
 **Вспомогательные материалы**
 
 1. [System V ABI](https://wiki.osdev.org/System_V_ABI#x86-64)
-1. [NASM Intel x86 Assembly Language Cheat Sheet](https://www.bencode.net/blob/nasmcheatsheet.pdf)
+1. [NASM Intel x86 Assembly Language Cheat Sheet](https://www.benMC-69670code.net/blob/nasmcheatsheet.pdf)
