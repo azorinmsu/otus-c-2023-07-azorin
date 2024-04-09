@@ -30,9 +30,6 @@ int main(int argc, char** argv) {
 
   const char* memblock = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fp, 0);
   
-  //unsigned crc = crc8(0, NULL, 0);
-  //crc = crc8(crc, memblock, sb.st_size);
-  
   printf("%lX\n", crc32(0, (const void*) memblock, sb.st_size));
 
   return 0;
