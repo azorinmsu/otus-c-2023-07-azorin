@@ -30,7 +30,16 @@ int main(int argc, char** argv) {
 
   const char* memblock = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fp, 0);
   
-  printf("%lX\n", crc32(0, (const void*) memblock, sb.st_size));
+  uLong crc = 0;
+
+  for (long int i = 0; i < sb.st_size; i = i + 256) {
+    int size = i + 256 >= sb.st_size ? sb.st_size - i : 256 ;
+    char buffer[size];
+    strncpy(buffer, memblock + i, size);
+    crc = crc32(crc, (const void*) buffer, size); 
+  }
+
+  printf("%lX\n", crc);
 
   return 0;
 }
