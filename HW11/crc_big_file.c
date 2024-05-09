@@ -10,7 +10,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <zlib.h>
+#include "crc.h"
+#include <stdint.h>
 
 int main(int argc, char** argv) {  
 	if (argc != 2) {
@@ -29,17 +30,8 @@ int main(int argc, char** argv) {
   stat(fname, &sb);
 
   const char* memblock = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fp, 0);
-  
-  uLong crc = 0;
 
-  for (long int i = 0; i < sb.st_size; i = i + 256) {
-    int size = i + 256 >= sb.st_size ? sb.st_size - i : 256 ;
-    char buffer[size];
-    strncpy(buffer, memblock + i, size);
-    crc = crc32(crc, (const void*) buffer, size); 
-  }
-
-  printf("%lX\n", crc);
+  printf("%X\n", crc32(memblock, sb.st_size));
 
   return 0;
 }

@@ -1,0 +1,1 @@
+gcc crc_big_file.c crc.c  -o main -lz -Wall -Wextra -Wpedantic -std=c11
