@@ -1,28 +1,88 @@
 #include "parser.h"
-#include <regex.h>
 #include <stdbool.h>
+#include <string.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <onigmo.h>
 
-bool isCombinedLog(char* row) {
-  regex_t regex;
+static int getBeginUrl(char* row, size_t length) {
+  OnigRegex regex;
+  OnigRegion *region;
 
-  if (regcomp(&regex, COMBINED_FORMAT_REGEXP, REG_NEWLINE)) {
-    fprintf(stderr, "Cannot compile regexp pattern");
-    return false;
+  int result = onig_new(&regex, BEGIN_URL_REGEXP, BEGIN_URL_REGEXP + strlen(BEGIN_URL_REGEXP), 
+            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
+
+  if (result != ONIG_NORMAL) {
+    return -1;
   }
 
-  int result = regexec(&regex, row, 0, NULL, 0);
+  region = onig_region_new();
 
-  if (!result) {
-    return true;
+  OnigPosition start = onig_search(regex, row, row + length, row, row + length, region, ONIG_OPTION_NONE);
+
+  onig_region_free(region, 1);
+  onig_free(regex);
+
+  OnigRegex regex_begin;
+  OnigRegion *region_begin;
+
+  char* patternBeginUrl = "/\0";
+
+  result = onig_new(&regex_begin, patternBeginUrl, patternBeginUrl + strlen(patternBeginUrl), 
+            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
+
+  if (result != ONIG_NORMAL) {
+    return -1;
   }
 
-  return false;
+
+
+  OnigPosition position = onig_search(regex_begin, row, row + length, row + start, row + length, region_begin, ONIG_OPTION_NONE);
+
+  onig_region_free(region_begin, 1);
+  onig_free(regex_begin);
+
+  return position;
+}
+
+static int getEndUrll(char* row, size_t length) {
+  OnigRegex regex;
+  OnigRegion *region;
+
+  int result = onig_new(&regex, END_URL_REGEXP, END_URL_REGEXP + strlen(END_URL_REGEXP), 
+            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
+
+  if (result != ONIG_NORMAL) {
+    return -1;
+  }
+
+  region = onig_region_new();
+
+  OnigPosition position = onig_search(regex, row, row + length, row, row + length, region, ONIG_OPTION_NONE);
+
+  onig_region_free(region, 1);
+  onig_free(regex);
+
+  return position;
 }
 
 Log parsedRow(char* row, size_t length) {
-  if (!isCombinedLog(row)) {
-    return EMPTY_LOG; 
-  }
+  int begin = getBeginUrl(row, length);
+  int end = getEndUrll(row, length);
+
+  char* url = malloc(sizeof(char) * (end - begin));
+  memcpy(url, &row[begin], end - begin);
+
+  printf("%s", url);
+
+
+  Buffer bufferUrl = {.buffer = url, .length = strlen(url)};
+
+  Log log;
+  log.url = bufferUrl;
+
 
   return EMPTY_LOG;
 }
+

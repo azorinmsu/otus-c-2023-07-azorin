@@ -2,6 +2,7 @@
 #define READER
 
 #include <stdio.h>
+#include <stddef.h>
 
 typedef struct {
     int size;

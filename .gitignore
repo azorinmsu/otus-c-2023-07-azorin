@@ -62,3 +62,6 @@ CTestTestfile.cmake
 _deps
 
 debts
+
+logs
+*.7z

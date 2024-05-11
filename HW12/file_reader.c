@@ -6,6 +6,7 @@
 #include "file_reader.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 static int countFiles(char* dir) {
     struct dirent *de;

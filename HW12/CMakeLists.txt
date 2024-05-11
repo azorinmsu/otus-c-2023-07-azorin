@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(main)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CONFUSE REQUIRED onigmo)
+
 add_executable(${PROJECT_NAME} main.c parser.c file_reader.c)
 
 target_link_libraries(${PROJECT_NAME} ${CONFUSE_LINK_LIBRARIES})

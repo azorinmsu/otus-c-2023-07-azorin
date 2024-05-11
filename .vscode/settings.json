@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "stdbool.h": "c",
+        "parser.h": "c",
+        "stdio.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "utility": "c",
+        "stat.h": "c",
+        "errno.h": "c",
+        "stdlib.h": "c",
+        "stdint.h": "c"
+    }
+}
