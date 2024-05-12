@@ -10,6 +10,11 @@
         "stat.h": "c",
         "errno.h": "c",
         "stdlib.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "deque": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "random": "c"
     }
 }
