@@ -22,6 +22,8 @@ static int getIndexFrom(char* row, size_t length, char* pattern, int lengthPatte
     return -1;
   }
 
+  region_begin = onig_region_new();
+
   OnigPosition position = onig_search(regex_begin, row, row + length, row + start, row + length, region_begin, ONIG_OPTION_NONE);
 
   onig_region_free(region_begin, 1);
