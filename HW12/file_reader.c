@@ -38,7 +38,7 @@ Files getAllFiles(char* dir) {
     DIR *dr = opendir(dir); 
   
     if (dr == NULL) { 
-        printf("Could not open current directory" ); 
+        printf("Could not open current directory"); 
         exit(0);
     }
   
@@ -53,8 +53,13 @@ Files getAllFiles(char* dir) {
             continue;
         }
 
-        char* name = (char*) malloc(sizeof(char) * sizeof(de->d_name));
-        strcpy(name, de->d_name);
+        char* tmp = strcat(strcat(dir, "/"), de->d_name);
+
+        char* name = (char*) malloc(sizeof(char) * (strlen(tmp) + 1));
+
+        strncpy(name, tmp, strlen(tmp) + 1);
+
+        name[strlen(tmp)] = '\0';
 
         result[count++] = name;
     }
@@ -86,6 +91,7 @@ char* readFile(char* fname) {
 		perror("Error reading file");
 		exit(1);		
 	}
+    
 
     return content;
 }

@@ -5,24 +5,15 @@
 #include <stddef.h>
 
 typedef struct {
-  char* buffer;
-  size_t length;
-} Buffer;
-
-typedef struct {
-  Buffer url;
+  char* url;
   size_t bytes;
-  Buffer referer;
+  char* referer;
 } Log;
 
-Log parsedRow(char* row, size_t length);
+Log parsedRow(char* row);
 
-static const Log EMPTY_LOG = {.url = {.buffer = NULL, .length = 0}, .bytes = 0, .referer = {.buffer = NULL, .length = 0}};
+void freeLog(Log log);
 
-static const char* BEGIN_URL_REGEXP = "\\] \"\\w+ \0";
-
-static const char* END_URL_REGEXP = " HTTP\0";
-
-static const char* BEGIN_BYTES_REGEXP = "HTTP\\/\\d\\.\\d\"";
+static const Log EMPTY_LOG = {.url = NULL, .bytes = 0, .referer = NULL};
 
 #endif

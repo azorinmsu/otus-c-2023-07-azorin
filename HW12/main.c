@@ -14,21 +14,58 @@ int main(int argc, char** argv) {
 		return EXIT_FAILURE;
   }
 
-  // Files files = getAllFiles(argv[1]);
+  Files files = getAllFiles(argv[1]);
 
-  char* c = "66.249.68.12 - - [20/Sep/2020:22:11:20 +0000] \"GET /%D0%BC%D0%B0%D0%BB%D0%B5%D0%BD%D1%8C%D0%BA%D0%B8%D0%B9-%D0%BC%D0%B0%D0%BB%D1%8C%D1%87%D0%B8%D0%BA-%D0%BF%D0%BE-%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8-%D0%9D%D1%83%D1%80%D0%B1%D0%B5%D0%BA-%D0%B6%D0%B8%D0%BB-%D0%B2-%D0%BD%D0%B5%D0%B1%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B9/?p=2 HTTP/1.1\" 304 1234 \"http://localhost\" \"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.110 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\" \"-\"\0";
+  for (int i = 0; i < files.size; ++i) {
+    char* content = readFile(files.content[i]);
 
-  Log log = parsedRow(c, strlen(c));
+    if (strlen(content) == 0) {
+      continue;
+    }
 
-  free(log.url.buffer);
-  free(log.referer.buffer);
+      
+    int count = 0;  
+    char* beginLine = &content[0];
+    char* endLine = NULL;
 
-  // for (int i = 0; i < files.size; ++i) {
-  //   //printf("%s\n", files.content[i]);
-  //   free(files.content[i]);
-  // }
+    char* endFile = &content[strlen(content) - 1];
 
-  // free(files.content);
+    int lineCount = 0;
+    do {      
+      lineCount++;
+      printf("%d\n", lineCount);
+      endLine = strstr(beginLine, "\n");
+
+      if (endLine == endFile) {
+        break;
+      }
+
+      if (endLine == NULL) {
+        count = &content[strlen(content) - 1] - beginLine;
+      } else {
+        count = endLine - beginLine;
+      }
+    
+      char* result = (char*) malloc(sizeof(char) * (count + 1));
+
+      strncpy(result, beginLine, count);
+      result[count] = '\0';
+
+      // printf("%s\n", result);
+
+      Log log = parsedRow(result);
+
+      freeLog(log);
+      free(result);
+
+      beginLine = endLine + 1;
+    } while (endLine != NULL);
+
+    free(content);
+    free(files.content[i]);
+  }
+
+  free(files.content);
 
   return 0;
 }

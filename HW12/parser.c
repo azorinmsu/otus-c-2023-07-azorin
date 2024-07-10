@@ -1,146 +1,95 @@
 #include "parser.h"
-#include <stdbool.h>
-#include <string.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <onigmo.h>
+#include "string.h"
+#include "stdlib.h"
 
-typedef struct {
-  int bytes;
-  Buffer referer;
-} Part;
+static char* getReferer(char* row) {
+  char* http = strstr(row, "HTTP");
 
-static int getIndexFrom(char* row, size_t length, char* pattern, int lengthPatter, int start) {
-  OnigRegex regex_begin;
-  OnigRegion *region_begin;
-
-  int result = onig_new(&regex_begin, pattern, pattern + lengthPatter, 
-            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
-
-  if (result != ONIG_NORMAL) {
-    return -1;
+  if (http == NULL) {
+    char* result = (char*) malloc(sizeof(char));
+    result[0] = '\0';
+    return result;
   }
 
-  region_begin = onig_region_new();
+  char* firstSpace = strstr(http, " ");
 
-  OnigPosition position = onig_search(regex_begin, row, row + length, row + start, row + length, region_begin, ONIG_OPTION_NONE);
+  char* beginRefer = strstr(firstSpace + 1, "\"") + 1;
 
-  onig_region_free(region_begin, 1);
-  onig_free(regex_begin);
+  char* endRefer = strstr(beginRefer, "\"");
 
-  return position;
+  int count = endRefer - beginRefer;
+
+  char* result = (char*) malloc(sizeof(char) * (count + 1));
+
+  strncpy(result, beginRefer, count);
+  result[count] = '\0';
+
+  return result;
 }
 
-static int getBeginUrl(char* row, size_t length) {
-  OnigRegex regex;
-  OnigRegion *region;
+static size_t getBytes(char* row) {
+  char* http = strstr(row, "HTTP");
 
-  int result = onig_new(&regex, BEGIN_URL_REGEXP, BEGIN_URL_REGEXP + strlen(BEGIN_URL_REGEXP), 
-            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
-
-  if (result != ONIG_NORMAL) {
-    return -1;
+  if (http == NULL) {
+    return 0;
   }
 
-  region = onig_region_new();
+  char* firstSpace = strstr(http, " ");
 
-  OnigPosition start = onig_search(regex, row, row + length, row, row + length, region, ONIG_OPTION_NONE);
+  char* beginBytes = strstr(firstSpace + 1, " ") + 1;
 
-  onig_region_free(region, 1);
-  onig_free(regex);
+  char* endBytes = strstr(beginBytes, " ");
 
-  return getIndexFrom(row, length, "/\0", 1, start);
+  int count = endBytes - beginBytes;
+
+  char* result =  (char*) malloc(sizeof(char) * (count + 1));
+
+  strncpy(result, beginBytes, count);
+  result[count] = '\0';
+
+  size_t bytes;
+
+  sscanf(result, "%ld", &bytes);
+
+  return bytes;
 }
 
-static int getEndUrl(char* row, size_t length) {
-  OnigRegex regex;
-  OnigRegion *region;
+static char* getUrl(char* row) {
+  char* qoutesOpen = strstr(row, "\"");
 
-  int result = onig_new(&regex, END_URL_REGEXP, END_URL_REGEXP + strlen(END_URL_REGEXP), 
-            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
+  char* qoutesEnd = strstr(qoutesOpen + 1, "\"");
 
-  if (result != ONIG_NORMAL) {
-    return -1;
+  if (qoutesEnd - qoutesOpen == 1) {
+    char* result = (char*) malloc(sizeof(char));
+    result[0] = '\0';
+    return result;
   }
 
-  region = onig_region_new();
+  char* beginUrl = strstr(qoutesOpen, " ") + 1;
 
-  OnigPosition position = onig_search(regex, row, row + length, row, row + length, region, ONIG_OPTION_NONE);
+  char* endUrl = strstr(beginUrl, " ");
 
-  onig_region_free(region, 1);
-  onig_free(regex);
+  int count = endUrl - beginUrl;
 
-  return position;
-}
-static Part getNextPart(char* row, size_t length) {
-  OnigRegex regex;
-  OnigRegion *region;
+  char* result =  (char*) malloc(sizeof(char) * (count + 1));
 
-  int result = onig_new(&regex, BEGIN_BYTES_REGEXP, BEGIN_BYTES_REGEXP + strlen(BEGIN_BYTES_REGEXP), 
-            ONIG_OPTION_DEFAULT, ONIG_ENCODING_ASCII, ONIG_SYNTAX_DEFAULT, NULL);
-
-  if (result != ONIG_NORMAL) {
-    exit(EXIT_FAILURE);
-  }
-
-  region = onig_region_new();
-
-  OnigPosition start = onig_search(regex, row, row + length, row, row + length, region, ONIG_OPTION_NONE);
-
-  onig_region_free(region, 1);
-  onig_free(regex);
-
-  int beforeHttpStatus = getIndexFrom(row, length, " ", 1, start) + 1;
-  int beginIndexBytes = getIndexFrom(row, length, " ", 1, beforeHttpStatus) + 1;
-  int endIndexBytes = getIndexFrom(row, length, "\"", 1, beginIndexBytes);
-
-  char* bytes = malloc(sizeof(char) * (endIndexBytes - beginIndexBytes));
-  memcpy(bytes, &row[beginIndexBytes], (endIndexBytes - beginIndexBytes));
-
-  int b;
-  sscanf(bytes, "%d", &b);
-
-  Part part;
-  part.bytes = b;
-
-  int endRefererUrl = getIndexFrom(row, length, "\"", 1, endIndexBytes + 1);
-  char* referer = malloc(sizeof(char) * (endRefererUrl - endIndexBytes - 1));
-  memcpy(referer, &row[endIndexBytes + 1], (endRefererUrl - endIndexBytes - 1));
-
-  Buffer refererBuf = {.buffer = referer, .length = strlen(referer)};
-  part.referer = refererBuf;
-
-  printf(" bytes = %d referer= %s\n", part.bytes, part.referer.buffer);
-
-  return part;
-}
-
-static Buffer getUrl(char* row, size_t length) {
-  int begin = getBeginUrl(row, length);
-  int end = getEndUrl(row, length);
-
-  char* url = malloc(sizeof(char) * (end - begin));
-  memcpy(url, &row[begin], end - begin);
-
-  printf("%s\n", url);
-
-  Buffer result = {.buffer = url, .length = strlen(url)};
+  strncpy(result, beginUrl, count);
+  result[count] = '\0';
 
   return result;
 }
 
 
-
-Log parsedRow(char* row, size_t length) {
+Log parsedRow(char* row) {
   Log log;
-  log.url = getUrl(row, length);
-  
-  Part part = getNextPart(row, length);
-
-  log.bytes = part.bytes;
-  log.referer = part.referer;
+  log.url = getUrl(row);
+  log.bytes = getBytes(row);
+  log.referer = getReferer(row);
 
   return log;
 }
 
+void freeLog(Log log) {
+  free(log.url);
+  free(log.referer);
+}
